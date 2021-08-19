@@ -10,9 +10,12 @@ import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
 import com.htc.billing.service.app.services.BillingCreateService;
+import com.htc.billing.service.app.services.DeleteBillingService;
 import com.htc.billing.service.app.services.FindAllService;
 import com.htc.billing.service.app.services.FindByBillingCodeService;
+import com.htc.billing.service.app.services.UpdateBillingService;
 import com.htc.billing.service.generated.BillingResult;
+import com.htc.billing.service.generated.DeleteBillingRequest;
 import com.htc.billing.service.generated.DeleteBillingResponse;
 import com.htc.billing.service.generated.FindAllBillingRequest;
 import com.htc.billing.service.generated.FindAllBillingResponse;
@@ -27,24 +30,29 @@ import com.htc.billing.service.generated.UpdateBillingResponse;
 public class BillingServiceEndpoint {
 
 	private static final String NAMESPACE_URI = "http://www.htc.com/billing/service/generated";
-	private BillingCreateService billingServices;
+	private BillingCreateService createBillingService;
 
 	@Autowired
 	private FindAllService findAllService;
 	
 	@Autowired
 	private FindByBillingCodeService findByCodeService;
+	@Autowired
+	private DeleteBillingService deleteService;
+	@Autowired
+	private UpdateBillingService updateBillingService;
+	
 	
 	@Autowired
-	public BillingServiceEndpoint(BillingCreateService billingServices) {
-		this.billingServices = billingServices;
+	public BillingServiceEndpoint(BillingCreateService createBillingService) {
+		this.createBillingService = createBillingService;
 	}
 	
 	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "newBillingRequest")
 	@ResponsePayload
 	public NewBillingResponse newBillingResponse(@RequestPayload NewBillingRequest request) {
 		NewBillingResponse response = new NewBillingResponse();
-		response.setServiceStatus(billingServices.createNewBilling(request));
+		response.setServiceStatus(createBillingService.createNewBilling(request));
 		return response;
 	}
 	
@@ -72,13 +80,15 @@ public class BillingServiceEndpoint {
 	@ResponsePayload
 	public UpdateBillingResponse updateResponse(@RequestPayload UpdateBillingRequest request) {
 		UpdateBillingResponse response = new UpdateBillingResponse();
+		response.setServiceStatus(updateBillingService.updateBilling(request));
 		return response;
 	}
 	
 	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "deleteBillingRequest")
 	@ResponsePayload
-	public DeleteBillingResponse deleteResponse(@RequestPayload UpdateBillingRequest request) {
+	public DeleteBillingResponse deleteResponse(@RequestPayload DeleteBillingRequest request) {
 		DeleteBillingResponse response = new DeleteBillingResponse();
+		response.setServiceStatus(deleteService.deleteBilling(request.getBillingCode()));
 		return response;
 	}
 }

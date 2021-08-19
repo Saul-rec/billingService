@@ -116,6 +116,7 @@
 	<xs:element name="updateBillingRequest">
 		<xs:complexType>
 			<xs:sequence>
+				<xs:element name="billingCode" type="xs:long" />
 				<xs:element name="codEmployee" type="xs:long" />
 				<xs:element name="nameClient" type="xs:string" />
 				<xs:element name="paymentType" type="xs:string" />

@@ -10,5 +10,6 @@ import com.htc.billing.service.app.entities.Billing;
 @EnableJpaRepositories
 public interface BillingRepository extends JpaRepository<Billing, Long>{
 
-	
+
+	public void deleteByBillingCode(long billingCode);
 }

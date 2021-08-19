@@ -14,4 +14,8 @@ import com.htc.billing.service.app.entities.BillingDetails;
 public interface BillingDetailsRepository extends JpaRepository<BillingDetails, Long> {
 
 	public List<BillingDetails> findByBillingCode(long billingCode);
+	
+	public void deleteAllByBillingCode(long billingCode); 
+	
+	
 }

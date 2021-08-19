@@ -2,10 +2,10 @@ package com.htc.billing.service.app.services;
 
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.htc.billing.service.app.entities.Billing;
 import com.htc.billing.service.app.entities.BillingDetails;
@@ -16,46 +16,50 @@ import com.htc.billing.service.app.repository.BillingDetailsRepository;
 import com.htc.billing.service.app.repository.BillingEmployeeRepository;
 import com.htc.billing.service.app.repository.BillingProductsRepository;
 import com.htc.billing.service.app.repository.BillingRepository;
-import com.htc.billing.service.generated.NewBillingRequest;
 import com.htc.billing.service.generated.ServiceStatus;
+import com.htc.billing.service.generated.UpdateBillingRequest;
 
 @Service
-public class BillingCreateService {
-
+@Transactional
+public class UpdateBillingService {
 	private static final String EXCEPTION = "Data Validation Failed. See Reasons";
 
-	private BillingDetailsRepository billingDetailsRepo;
+	private BillingDetailsRepository detailsRepo;
 	private BillingRepository billingRepo;
+	private ServiceStatus serviceStatus =  new ServiceStatus();
+	private Optional<Billing> aBill;
 	@Autowired
 	private BillingEmployeeRepository billingEmployeeRepo;
 	@Autowired
 	private BillingProductsRepository billingProductsRepo;
-	private ServiceStatus serviceStatus = new ServiceStatus();
 
-	@Autowired
-	public BillingCreateService(BillingDetailsRepository repository, BillingRepository billingRepository) {
+	public UpdateBillingService(BillingDetailsRepository detailsRepo, BillingRepository billingRepo) {
 		super();
-		this.billingDetailsRepo = repository;
-		this.billingRepo = billingRepository;
+		this.detailsRepo = detailsRepo;
+		this.billingRepo = billingRepo;
 	}
 
-	public ServiceStatus createNewBilling(NewBillingRequest request) {
-		serviceStatus.getServiceResult().clear();
-		Random rnd = new Random();
-		long billingCode = (rnd.nextInt(89999999) + 10000000);
-
+	@Transactional
+	public ServiceStatus updateBilling(UpdateBillingRequest request) {
+		String nameEmp = null;
 		long codEmployee = request.getCodEmployee();
 		String nameClient = request.getNameClient();
 		String paymentType = request.getPaymentType();
 		LocalDate dateOfSell = LocalDate.now();
 		Optional<Products> aProduct;
-
-		String nameEmp = null;
 		double totalSell = 0;
 
 		double subtotal = 0;
 		long codProduct;
 		String presentationProduct;
+
+		long billingCode = request.getBillingCode();
+		aBill = billingRepo.findById(billingCode);
+		if (!aBill.isPresent()) {
+			serviceStatus.setServiceCode("404: NOT FOUND");
+			serviceStatus.getServiceResult().add("billing with code " + billingCode + " was not found");
+			throw new ServiceFaultException("DATA ERROR", serviceStatus);
+		}
 
 		Optional<Employee> anEmployee = billingEmployeeRepo.findByCodEmployee(codEmployee);
 		if (anEmployee.isEmpty()) {
@@ -73,7 +77,7 @@ public class BillingCreateService {
 			double prodPrice = request.getProductDetails().get(i).getProductUnitPrice();
 			if (codProdu == 0 || quatity == 0 || prodName == null || prodPrice == 0) {
 				serviceStatus.setServiceCode("500: BAD REQUEST");
-				serviceStatus.getServiceResult().add("No empty fields allowed in products details");
+				serviceStatus.getServiceResult().add("No empty fields allowed in products details section");
 				throw new ServiceFaultException(EXCEPTION, serviceStatus);
 			}
 		}
@@ -98,9 +102,10 @@ public class BillingCreateService {
 			subtotal = quantity * productUnitPrice;
 			totalSell += subtotal;
 			try {
+				detailsRepo.deleteAllByBillingCode(billingCode);
 				BillingDetails details = new BillingDetails(billingCode, codProduct, quantity, presentationProduct,
 						productName, productUnitPrice, subtotal);
-				billingDetailsRepo.save(details);
+				detailsRepo.save(details);
 				serviceStatus.getServiceResult().clear();
 			} catch (Exception e) {
 				serviceStatus.setServiceCode("500: SERVER ERROR");
@@ -113,8 +118,8 @@ public class BillingCreateService {
 			Billing bill = new Billing(billingCode, codEmployee, nameEmp, nameClient, paymentType, dateOfSell,
 					totalSell);
 			billingRepo.save(bill);
-			serviceStatus.setServiceCode("201: CREATED");
-			serviceStatus.getServiceResult().add("billing with code " + billingCode + " created in DB successfully");
+			serviceStatus.setServiceCode("200: UPDATED");
+			serviceStatus.getServiceResult().add("billing with code " + billingCode + " updated successfully");
 		} catch (Exception e) {
 			serviceStatus.setServiceCode("500: SERVER ERROR");
 			serviceStatus.getServiceResult().add(e.toString());
