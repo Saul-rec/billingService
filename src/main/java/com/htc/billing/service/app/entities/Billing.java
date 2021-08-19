@@ -13,14 +13,18 @@ public class Billing {
 
 	@Id
 	private long billingCode;
-	
+	@Column(nullable = false)
 	private long codeEmployee;
 	
 	@Column(nullable = true)
 	private String nameEmployee;
 	private String nameClient;
-	private String sellType;
+	
+	@Column(nullable = false)
+	private String paymentType;
+	@Column(nullable = false)
 	private LocalDate dateOfSell;
+	@Column(nullable = false, precision = 2)
 	private double totalSell;
 
 	public Billing() {
@@ -28,13 +32,13 @@ public class Billing {
 	}
 
 	public Billing(long billingCode, long codeEmployee,String nameEmployee,
-			String nameClient, String sellType, LocalDate dateOfSell, double totalSell) {
+			String nameClient, String paymentType, LocalDate dateOfSell, double totalSell) {
 		super();
 		this.billingCode = billingCode;
 		this.nameEmployee = nameEmployee;
 		this.codeEmployee = codeEmployee;
 		this.nameClient = nameClient;
-		this.sellType = sellType;
+		this.paymentType = paymentType;
 		this.dateOfSell = dateOfSell;
 		this.totalSell = totalSell;
 	}
@@ -63,12 +67,12 @@ public class Billing {
 		this.nameClient = nameClient;
 	}
 
-	public String getSellType() {
-		return sellType;
+	public String getPaymentType() {
+		return paymentType;
 	}
 
-	public void setSellType(String sellType) {
-		this.sellType = sellType;
+	public void setPaymentType(String paymentType) {
+		this.paymentType = paymentType;
 	}
 
 	public LocalDate getDateOfSell() {

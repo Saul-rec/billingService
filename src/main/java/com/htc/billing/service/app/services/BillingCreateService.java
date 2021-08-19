@@ -22,7 +22,7 @@ import com.htc.billing.service.generated.ServiceStatus;
 @Service
 public class BillingCreateService {
 	
-	private static final String EXCEPTION = "Exception Catched";
+	private static final String EXCEPTION = "Data Validation Failed. See Reasons";
 
 	private BillingDetailsRepository billingDetailsRepo;
 	private BillingRepository billingRepo;
@@ -31,7 +31,7 @@ public class BillingCreateService {
 	@Autowired
 	private BillingProductsRepository billingProductsRepo;
 	private ServiceStatus serviceStatus = new ServiceStatus();
-
+	
 	@Autowired
 	public BillingCreateService(BillingDetailsRepository repository, BillingRepository billingRepository) {
 		super();
@@ -40,80 +40,79 @@ public class BillingCreateService {
 	}
 
 	public ServiceStatus createNewBilling(NewBillingRequest request) {
-
+		serviceStatus.getServiceResult().clear();
 		Random rnd = new Random();
 		long billingCode = (rnd.nextInt(89999999) + 10000000);
 
 		long codEmployee = request.getCodEmployee();
 		String nameClient = request.getNameClient();
-		String sellType = request.getSellType();
+		String paymentType = request.getPaymentType();
 		LocalDate dateOfSell = LocalDate.now();
-
-		String nameEmployee = " ";
+		Optional<Products> aProduct;
+		
+		String nameEmp = null;
 		double totalSell = 0;
 
 		double subtotal = 0;
 		long codProduct;
-		String presentationProduct = " ";
-		Optional<Products> aProduct;
-
+		String presentationProduct;
+		
+		Optional<Employee> anEmployee = billingEmployeeRepo.findByCodEmployee(codEmployee);
+		if (anEmployee.isEmpty()) {
+			serviceStatus.setServiceCode("404: NOT FOUND");
+			serviceStatus.getServiceResult().add("The employee " + codEmployee + " was not found");
+			throw new ServiceFaultException(EXCEPTION, serviceStatus);
+		}else {
+			nameEmp = anEmployee.get().getNameEmployee();
+		}
+		
 		for (int i = 0; i < request.getProductDetails().size(); i++) {
-			try {
-				codProduct = request.getProductDetails().get(i).getCodProduct();
-				aProduct = billingProductsRepo.findByCodProduct(codProduct);
-				if (billingProductsRepo.findByCodProduct(codProduct).isPresent()) {
-					presentationProduct = billingProductsRepo.findByCodProduct(codProduct).get()
-							.getPresentationProduct();
-				}else {
-					serviceStatus.getServiceResult()
-					.add("product " + codProduct + " presentation is empty. " + "Setted to null");
-				}
-				if (aProduct.isEmpty()) {
-					serviceStatus.setServiceCode("404: NOT FOUND");
-					serviceStatus.getServiceResult()
-							.add("product code " + codProduct + " was not found in DB." + "Cannot Proceed");
-					throw new ServiceFaultException("DATA ERROR", serviceStatus);
-				} 
-
-			} catch (Exception e) {
-				serviceStatus.setServiceCode("500: SERVER ERROR");
-				serviceStatus.getServiceResult().add(e.toString());
+			long codProdu = request.getProductDetails().get(i).getCodProduct();
+			int quatity = request.getProductDetails().get(i).getQuantity();
+			String prodName = request.getProductDetails().get(i).getProductName();
+			double prodPrice = request.getProductDetails().get(i).getProductUnitPrice();
+			if (codProdu == 0 || quatity == 0 || prodName== null || prodPrice == 0 ) {
+				serviceStatus.setServiceCode("500: BAD REQUEST");
+				serviceStatus.getServiceResult().add("No empty fields allowed");
 				throw new ServiceFaultException(EXCEPTION, serviceStatus);
 			}
-
 		}
-
+		
+		for (int i = 0; i < request.getProductDetails().size(); i++) {
+			codProduct = request.getProductDetails().get(i).getCodProduct();
+			aProduct = billingProductsRepo.findByCodProduct(codProduct);
+			if (aProduct.isEmpty()) {
+				serviceStatus.setServiceCode("404: NOT FOUND");
+				serviceStatus.getServiceResult()
+						.add("product code " + codProduct + " was not found in DB." + "Cannot Proceed");
+				throw new ServiceFaultException("DATA ERROR", serviceStatus);
+			}
+		}
+		 
 		for (int i = 0; i < request.getProductDetails().size(); i++) {
 			codProduct = request.getProductDetails().get(i).getCodProduct();
 			int quantity = request.getProductDetails().get(i).getQuantity();
+			presentationProduct = billingProductsRepo.findByCodProduct(codProduct).get()
+					.getPresentationProduct();
 			String productName = request.getProductDetails().get(i).getProductName();
 			double productUnitPrice = request.getProductDetails().get(i).getProductUnitPrice();
 			subtotal = quantity * productUnitPrice;
 			totalSell += subtotal;
 			try {
-				BillingDetails details = new BillingDetails(billingCode, codProduct, quantity, presentationProduct,
-						productName, productUnitPrice, subtotal);
+				BillingDetails details = new BillingDetails(billingCode, codProduct, quantity, 
+						presentationProduct,productName, productUnitPrice, subtotal);
 				billingDetailsRepo.save(details);
+				serviceStatus.getServiceResult().clear();
 			} catch (Exception e) {
-				serviceStatus.setServiceCode("500: ERROR");
+				serviceStatus.setServiceCode("500: SERVER ERROR");
 				serviceStatus.getServiceResult().add(e.toString());
 				throw new ServiceFaultException(EXCEPTION, serviceStatus);
 			}
 		}
-
+		
+		
 		try {
-			if (billingEmployeeRepo.findByCodEmployee(codEmployee).isPresent()) {
-				nameEmployee = billingEmployeeRepo.findByCodEmployee(codEmployee).get().getNameEmployee();
-			}
-			Optional<Employee> anEmployee = billingEmployeeRepo.findByCodEmployee(codEmployee);
-			if (nameEmployee.isEmpty()) {
-				serviceStatus.getServiceResult().add("Name of employee " + codEmployee + " is empty");
-			} else if (anEmployee.isEmpty()) {
-				serviceStatus.setServiceCode("404: NOT FOUND");
-				serviceStatus.getServiceResult().add("The employee " + codEmployee + " was not found");
-				throw new ServiceFaultException(EXCEPTION, serviceStatus);
-			}
-			Billing bill = new Billing(billingCode, codEmployee, nameEmployee, nameClient, sellType, dateOfSell,
+			Billing bill = new Billing(billingCode, codEmployee, nameEmp, nameClient, paymentType, dateOfSell,
 					totalSell);
 			billingRepo.save(bill);
 			serviceStatus.setServiceCode("201: CREATED");

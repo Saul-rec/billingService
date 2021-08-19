@@ -38,8 +38,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "serviceStatus"
 })
-@XmlRootElement(name = "newBillingResponse")
-public class NewBillingResponse {
+@XmlRootElement(name = "deleteBillingResponse")
+public class DeleteBillingResponse {
 
     @XmlElement(required = true)
     protected ServiceStatus serviceStatus;

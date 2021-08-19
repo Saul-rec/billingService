@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="serviceStatus" type="{http://www.htc.com/billing/service/generated}serviceStatus"/>
+ *         &lt;element name="billingResult" type="{http://www.htc.com/billing/service/generated}billingResult"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -36,36 +36,36 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "serviceStatus"
+    "billingResult"
 })
-@XmlRootElement(name = "newBillingResponse")
-public class NewBillingResponse {
+@XmlRootElement(name = "findBillingByIdResponse")
+public class FindBillingByIdResponse {
 
     @XmlElement(required = true)
-    protected ServiceStatus serviceStatus;
+    protected BillingResult billingResult;
 
     /**
-     * Gets the value of the serviceStatus property.
+     * Gets the value of the billingResult property.
      * 
      * @return
      *     possible object is
-     *     {@link ServiceStatus }
+     *     {@link BillingResult }
      *     
      */
-    public ServiceStatus getServiceStatus() {
-        return serviceStatus;
+    public BillingResult getBillingResult() {
+        return billingResult;
     }
 
     /**
-     * Sets the value of the serviceStatus property.
+     * Sets the value of the billingResult property.
      * 
      * @param value
      *     allowed object is
-     *     {@link ServiceStatus }
+     *     {@link BillingResult }
      *     
      */
-    public void setServiceStatus(ServiceStatus value) {
-        this.serviceStatus = value;
+    public void setBillingResult(BillingResult value) {
+        this.billingResult = value;
     }
 
 }

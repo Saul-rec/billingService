@@ -16,14 +16,23 @@ public class BillingDetails {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
+	@Column(nullable = false)
 	private long billingCode;
+	
+	@Column(nullable = false)
 	private long codProduct;
+	
+	@Column(nullable = false)
 	private int quantity;
 	
 	@Column(nullable = true)
 	String presentationProduct;
 	private String nameProduct;
+	
+	@Column(nullable = false)
 	private double unitPriceProduct;
+	
+	@Column(nullable = false, precision = 2)
 	private double subtotal;
 
 	public BillingDetails() {

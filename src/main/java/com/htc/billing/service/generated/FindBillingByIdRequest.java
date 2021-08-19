@@ -10,7 +10,6 @@ package com.htc.billing.service.generated;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -25,7 +24,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="serviceStatus" type="{http://www.htc.com/billing/service/generated}serviceStatus"/>
+ *         &lt;element name="billingCode" type="{http://www.w3.org/2001/XMLSchema}long"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -36,36 +35,27 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "serviceStatus"
+    "billingCode"
 })
-@XmlRootElement(name = "newBillingResponse")
-public class NewBillingResponse {
+@XmlRootElement(name = "findBillingByIdRequest")
+public class FindBillingByIdRequest {
 
-    @XmlElement(required = true)
-    protected ServiceStatus serviceStatus;
+    protected long billingCode;
 
     /**
-     * Gets the value of the serviceStatus property.
+     * Gets the value of the billingCode property.
      * 
-     * @return
-     *     possible object is
-     *     {@link ServiceStatus }
-     *     
      */
-    public ServiceStatus getServiceStatus() {
-        return serviceStatus;
+    public long getBillingCode() {
+        return billingCode;
     }
 
     /**
-     * Sets the value of the serviceStatus property.
+     * Sets the value of the billingCode property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link ServiceStatus }
-     *     
      */
-    public void setServiceStatus(ServiceStatus value) {
-        this.serviceStatus = value;
+    public void setBillingCode(long value) {
+        this.billingCode = value;
     }
 
 }

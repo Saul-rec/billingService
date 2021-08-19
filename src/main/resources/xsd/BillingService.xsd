@@ -9,13 +9,13 @@
 			<xs:sequence>
 				<xs:element name="codEmployee" type="xs:long" />
 				<xs:element name="nameClient" type="xs:string" />
-				<xs:element name="sellType" type="xs:string" />
+				<xs:element name="paymentType" type="xs:string" />
 				<xs:element name="productDetails" maxOccurs="unbounded"
 					minOccurs="1">
 					<xs:complexType>
 						<xs:sequence>
 							<xs:element name="codProduct" type="xs:long" />
-							<xs:element name="quantity" type="xs:int"/>
+							<xs:element name="quantity" type="xs:int" />
 							<xs:element name="productName" type="xs:string" />
 							<xs:element name="productUnitPrice" type="xs:double" />
 						</xs:sequence>
@@ -37,7 +37,109 @@
 	<xs:complexType name="serviceStatus">
 		<xs:sequence>
 			<xs:element name="serviceCode" type="xs:string" />
-			<xs:element name="serviceResult" type="xs:string" maxOccurs="unbounded"/>
+			<xs:element name="serviceResult" type="xs:string"
+				maxOccurs="unbounded" />
 		</xs:sequence>
 	</xs:complexType>
+
+	<xs:element name="deleteBillingRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="billingCode" type="xs:long"></xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="deleteBillingResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="serviceStatus" type="tns:serviceStatus"></xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="findAllBillingRequest">
+		<xs:complexType>
+			<xs:sequence></xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="findAllBillingResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="billingResult" type="tns:billingResult"
+					maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="billingResult">
+		<xs:sequence>
+			<xs:element name="billingCode" type="xs:long" />
+			<xs:element name="codeEmployee" type="xs:long" />
+			<xs:element name="nameEmployee" type="xs:string" />
+			<xs:element name="nameClient" type="xs:string" />
+			<xs:element name="paymentType" type="xs:string" />
+			<xs:element name="dateOfSell" type="xs:date" />
+			<xs:element name="totalSell" type="xs:double" />
+			<xs:element name="productsDetails" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="codProduct" type="xs:long" />
+						<xs:element name="quantity" type="xs:int" />
+						<xs:element name="presentationProduct" type="xs:string" />
+						<xs:element name="nameProduct" type="xs:string" />
+						<xs:element name="unitPriceProduct" type="xs:double" />
+						<xs:element name="subtotal" type="xs:double" />
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="findBillingByIdRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="billingCode" type="xs:long" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="findBillingByIdResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="billingResult" type="tns:billingResult" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="updateBillingRequest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="codEmployee" type="xs:long" />
+				<xs:element name="nameClient" type="xs:string" />
+				<xs:element name="paymentType" type="xs:string" />
+				<xs:element name="productDetails" maxOccurs="unbounded"
+					minOccurs="1">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="codProduct" type="xs:long" />
+							<xs:element name="quantity" type="xs:int" />
+							<xs:element name="productName" type="xs:string" />
+							<xs:element name="productUnitPrice" type="xs:double" />
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="updateBillingResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="serviceStatus" type="tns:serviceStatus" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
 </xs:schema>

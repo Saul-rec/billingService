@@ -59,8 +59,8 @@ import javax.xml.bind.annotation.XmlType;
     "paymentType",
     "productDetails"
 })
-@XmlRootElement(name = "newBillingRequest")
-public class NewBillingRequest {
+@XmlRootElement(name = "updateBillingRequest")
+public class UpdateBillingRequest {
 
     protected long codEmployee;
     @XmlElement(required = true)
@@ -68,7 +68,7 @@ public class NewBillingRequest {
     @XmlElement(required = true)
     protected String paymentType;
     @XmlElement(required = true)
-    protected List<NewBillingRequest.ProductDetails> productDetails;
+    protected List<UpdateBillingRequest.ProductDetails> productDetails;
 
     /**
      * Gets the value of the codEmployee property.
@@ -152,13 +152,13 @@ public class NewBillingRequest {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link NewBillingRequest.ProductDetails }
+     * {@link UpdateBillingRequest.ProductDetails }
      * 
      * 
      */
-    public List<NewBillingRequest.ProductDetails> getProductDetails() {
+    public List<UpdateBillingRequest.ProductDetails> getProductDetails() {
         if (productDetails == null) {
-            productDetails = new ArrayList<NewBillingRequest.ProductDetails>();
+            productDetails = new ArrayList<UpdateBillingRequest.ProductDetails>();
         }
         return this.productDetails;
     }
