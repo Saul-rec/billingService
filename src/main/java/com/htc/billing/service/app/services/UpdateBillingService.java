@@ -93,6 +93,8 @@ public class UpdateBillingService {
 			}
 		}
 
+
+		detailsRepo.deleteAllByBillingCode(billingCode);
 		for (int i = 0; i < request.getProductDetails().size(); i++) {
 			codProduct = request.getProductDetails().get(i).getCodProduct();
 			int quantity = request.getProductDetails().get(i).getQuantity();
@@ -102,7 +104,6 @@ public class UpdateBillingService {
 			subtotal = quantity * productUnitPrice;
 			totalSell += subtotal;
 			try {
-				detailsRepo.deleteAllByBillingCode(billingCode);
 				BillingDetails details = new BillingDetails(billingCode, codProduct, quantity, presentationProduct,
 						productName, productUnitPrice, subtotal);
 				detailsRepo.save(details);
