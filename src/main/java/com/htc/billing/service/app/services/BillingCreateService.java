@@ -63,7 +63,7 @@ public class BillingCreateService {
 			serviceStatus.getServiceResult().add("The employee " + codEmployee + " was not found");
 			throw new ServiceFaultException(EXCEPTION, serviceStatus);
 		}else {
-			nameEmp = anEmployee.get().getNameEmployee();
+			nameEmp = anEmployee.get().getNameEmployee() + " " + anEmployee.get().getLastnameEmployee();
 		}
 		
 		for (int i = 0; i < request.getProductDetails().size(); i++) {

@@ -97,7 +97,7 @@
 		</xs:sequence>
 	</xs:complexType>
 
-	<xs:element name="findBillingByIdRequest">
+	<xs:element name="findByBillingCodeRequest">
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element name="billingCode" type="xs:long" />
@@ -105,7 +105,7 @@
 		</xs:complexType>
 	</xs:element>
 
-	<xs:element name="findBillingByIdResponse">
+	<xs:element name="findByBillingCodeResponse">
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element name="billingResult" type="tns:billingResult" />

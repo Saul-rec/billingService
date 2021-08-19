@@ -10,13 +10,14 @@ import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
 import com.htc.billing.service.app.services.BillingCreateService;
-import com.htc.billing.service.app.services.TestService;
+import com.htc.billing.service.app.services.FindAllService;
+import com.htc.billing.service.app.services.FindByBillingCodeService;
 import com.htc.billing.service.generated.BillingResult;
 import com.htc.billing.service.generated.DeleteBillingResponse;
 import com.htc.billing.service.generated.FindAllBillingRequest;
 import com.htc.billing.service.generated.FindAllBillingResponse;
-import com.htc.billing.service.generated.FindBillingByIdRequest;
-import com.htc.billing.service.generated.FindBillingByIdResponse;
+import com.htc.billing.service.generated.FindByBillingCodeRequest;
+import com.htc.billing.service.generated.FindByBillingCodeResponse;
 import com.htc.billing.service.generated.NewBillingRequest;
 import com.htc.billing.service.generated.NewBillingResponse;
 import com.htc.billing.service.generated.UpdateBillingRequest;
@@ -27,12 +28,12 @@ public class BillingServiceEndpoint {
 
 	private static final String NAMESPACE_URI = "http://www.htc.com/billing/service/generated";
 	private BillingCreateService billingServices;
-	
-//	@Autowired
-//	private FindBillingService findBillingService;
+
 	@Autowired
-	private TestService serviceTest;
+	private FindAllService findAllService;
 	
+	@Autowired
+	private FindByBillingCodeService findByCodeService;
 	
 	@Autowired
 	public BillingServiceEndpoint(BillingCreateService billingServices) {
@@ -52,25 +53,18 @@ public class BillingServiceEndpoint {
 	public FindAllBillingResponse allBillingResponse(@RequestPayload FindAllBillingRequest request) {
 		FindAllBillingResponse response = new FindAllBillingResponse();
 		List<BillingResult> billingResultList = new ArrayList<BillingResult>();
-		billingResultList =  serviceTest.getAllBillings();
+		billingResultList =  findAllService.getAllBillings();
 		response.getBillingResult().addAll(billingResultList);
 		return response;
 	}
 		
-		//		List<Billing> billingList = findBillingService.getAllBillings();
-//		
-//		for (Billing billing : billingList) {
-//			BillingResult result = new BillingResult();
-//			BeanUtils.copyProperties(billing, result);
-//			billingResultList.add(result);
-//		}
-		
-		
-	
-	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "findBillingByIdRequest")
+
+	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "findByBillingCodeRequest")
 	@ResponsePayload
-	public FindBillingByIdResponse findByIdResponse(@RequestPayload FindBillingByIdRequest request) {
-		FindBillingByIdResponse response = new FindBillingByIdResponse();
+	public FindByBillingCodeResponse findByCodeResponse(@RequestPayload FindByBillingCodeRequest request) {
+		FindByBillingCodeResponse response = new FindByBillingCodeResponse();
+		BillingResult result = findByCodeService.findByCode(request.getBillingCode());
+		response.setBillingResult(result);
 		return response;
 	}
 	
