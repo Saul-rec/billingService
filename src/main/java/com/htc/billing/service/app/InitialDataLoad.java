@@ -22,7 +22,7 @@ public class InitialDataLoad  {
 			
 			empRepo.saveAll(List.of(emp1,emp2));
 			
-			Products prod1 = new Products(78548526,"Pollo","Pollo de prueba",2.50,"bolsa",200);
+			Products prod1 = new Products(78548526,"Pollo","Pollo",2.50,"bolsa",200);
 			Products prod2 = new Products(54241565,"Consome","Consome de pollo",0.25,"sobre",500);
 			prodRepo.saveAll(List.of(prod1,prod2));
 		};

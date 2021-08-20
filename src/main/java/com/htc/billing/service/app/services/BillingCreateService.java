@@ -84,7 +84,7 @@ public class BillingCreateService {
 			if (aProduct.isEmpty()) {
 				serviceStatus.setServiceCode("404: NOT FOUND");
 				serviceStatus.getServiceResult()
-						.add("product code " + codProduct + " was not found in DB." + "Cannot Proceed");
+						.add("product " + codProduct + " was not found in DB." + "Cannot Proceed");
 				throw new ServiceFaultException("DATA ERROR", serviceStatus);
 			}
 		}
