@@ -13,6 +13,6 @@ import com.htc.billing.service.app.entities.Products;
 public interface BillingProductsRepository extends CrudRepository<Products, Integer>{
 
 	//@Query(value = "select p.codProduct from com.htc.billing.service.app.entities.Products p where p.codProduct = ?1")
-	Optional<Products> findByCodProduct(long codProduct);
+	Optional<Products> findByCodeProduct(long codeProduct);
 	
 }

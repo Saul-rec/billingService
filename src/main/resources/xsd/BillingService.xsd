@@ -16,8 +16,6 @@
 						<xs:sequence>
 							<xs:element name="codProduct" type="xs:long" />
 							<xs:element name="quantity" type="xs:int" />
-							<xs:element name="productName" type="xs:string" />
-							<xs:element name="productUnitPrice" type="xs:double" />
 						</xs:sequence>
 					</xs:complexType>
 				</xs:element>
@@ -81,6 +79,8 @@
 			<xs:element name="nameClient" type="xs:string" />
 			<xs:element name="paymentType" type="xs:string" />
 			<xs:element name="dateOfSell" type="xs:date" />
+			<xs:element name="iva" type="xs:double"/>
+			<xs:element name="subtotal" type="xs:double"/>
 			<xs:element name="totalSell" type="xs:double" />
 			<xs:element name="productsDetails" maxOccurs="unbounded">
 				<xs:complexType>
@@ -90,7 +90,6 @@
 						<xs:element name="presentationProduct" type="xs:string" />
 						<xs:element name="nameProduct" type="xs:string" />
 						<xs:element name="unitPriceProduct" type="xs:double" />
-						<xs:element name="subtotal" type="xs:double" />
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -126,8 +125,6 @@
 						<xs:sequence>
 							<xs:element name="codProduct" type="xs:long" />
 							<xs:element name="quantity" type="xs:int" />
-							<xs:element name="productName" type="xs:string" />
-							<xs:element name="productUnitPrice" type="xs:double" />
 						</xs:sequence>
 					</xs:complexType>
 				</xs:element>

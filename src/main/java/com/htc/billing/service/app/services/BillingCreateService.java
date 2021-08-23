@@ -42,36 +42,34 @@ public class BillingCreateService {
 	public ServiceStatus createNewBilling(NewBillingRequest request) {
 		serviceStatus.getServiceResult().clear();
 		Random rnd = new Random();
-		long billingCode = (rnd.nextInt(89999999) + 10000000);
-
+		long billingCode = (rnd.nextInt(89999998) + 10000000);
+		long billingDetailCode = billingCode + 1; 
+		
 		long codEmployee = request.getCodEmployee();
 		String nameClient = request.getNameClient();
 		String paymentType = request.getPaymentType();
 		LocalDate dateOfSell = LocalDate.now();
-		Optional<Products> aProduct;
-
-		String nameEmp = null;
+		double totalIva=0;
 		double totalSell = 0;
-
 		double subtotal = 0;
+		Optional<Products> aProduct;
+		
+		double ivaPerProduct;
+		double amount;
+		
 		long codProduct;
-		String presentationProduct;
 
-		Optional<Employee> anEmployee = billingEmployeeRepo.findByCodEmployee(codEmployee);
+		Optional<Employee> anEmployee = billingEmployeeRepo.findByCodeEmployee(codEmployee);
 		if (anEmployee.isEmpty()) {
 			serviceStatus.setServiceCode("404: NOT FOUND");
 			serviceStatus.getServiceResult().add("The employee " + codEmployee + " was not found");
 			throw new ServiceFaultException(EXCEPTION, serviceStatus);
-		} else {
-			nameEmp = anEmployee.get().getNameEmployee() + " " + anEmployee.get().getLastnameEmployee();
 		}
-
+		
 		for (int i = 0; i < request.getProductDetails().size(); i++) {
 			long codProdu = request.getProductDetails().get(i).getCodProduct();
-			int quatity = request.getProductDetails().get(i).getQuantity();
-			String prodName = request.getProductDetails().get(i).getProductName();
-			double prodPrice = request.getProductDetails().get(i).getProductUnitPrice();
-			if (codProdu == 0 || quatity == 0 || prodName == null || prodPrice == 0) {
+			int quantity = request.getProductDetails().get(i).getQuantity();
+			if (codProdu == 0 || quantity == 0) {
 				serviceStatus.setServiceCode("500: BAD REQUEST");
 				serviceStatus.getServiceResult().add("No empty fields allowed in products details");
 				throw new ServiceFaultException(EXCEPTION, serviceStatus);
@@ -80,7 +78,7 @@ public class BillingCreateService {
 
 		for (int i = 0; i < request.getProductDetails().size(); i++) {
 			codProduct = request.getProductDetails().get(i).getCodProduct();
-			aProduct = billingProductsRepo.findByCodProduct(codProduct);
+			aProduct = billingProductsRepo.findByCodeProduct(codProduct);
 			if (aProduct.isEmpty()) {
 				serviceStatus.setServiceCode("404: NOT FOUND");
 				serviceStatus.getServiceResult()
@@ -92,14 +90,16 @@ public class BillingCreateService {
 		for (int i = 0; i < request.getProductDetails().size(); i++) {
 			codProduct = request.getProductDetails().get(i).getCodProduct();
 			int quantity = request.getProductDetails().get(i).getQuantity();
-			presentationProduct = billingProductsRepo.findByCodProduct(codProduct).get().getPresentationProduct();
-			String productName = request.getProductDetails().get(i).getProductName();
-			double productUnitPrice = request.getProductDetails().get(i).getProductUnitPrice();
-			subtotal = quantity * productUnitPrice;
-			totalSell += subtotal;
+			aProduct = billingProductsRepo.findByCodeProduct(codProduct);
+			
+			double productUnitPrice = aProduct.get().getUnitPriceProduct();
+			amount = quantity * productUnitPrice;
+			ivaPerProduct = productUnitPrice * 0.13;
+			subtotal += amount;
+			totalIva += ivaPerProduct;
 			try {
-				BillingDetails details = new BillingDetails(billingCode, codProduct, quantity, presentationProduct,
-						productName, productUnitPrice, subtotal);
+				BillingDetails details = new BillingDetails(billingDetailCode,billingCode, codProduct, quantity, 
+						productUnitPrice,ivaPerProduct,amount);
 				billingDetailsRepo.save(details);
 				serviceStatus.getServiceResult().clear();
 			} catch (Exception e) {
@@ -108,10 +108,11 @@ public class BillingCreateService {
 				throw new ServiceFaultException(EXCEPTION, serviceStatus);
 			}
 		}
-
+		
+		totalSell = subtotal + totalIva;
 		try {
-			Billing bill = new Billing(billingCode, codEmployee, nameEmp, nameClient, paymentType, dateOfSell,
-					totalSell);
+			Billing bill = new Billing(billingCode, codEmployee, nameClient, paymentType, dateOfSell,
+					totalIva,subtotal,totalSell);
 			billingRepo.save(bill);
 			serviceStatus.setServiceCode("201: CREATED");
 			serviceStatus.getServiceResult().add("billing with code " + billingCode + " created in DB successfully");

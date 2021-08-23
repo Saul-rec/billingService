@@ -9,14 +9,17 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.htc.billing.service.app.entities.Billing;
 import com.htc.billing.service.app.entities.BillingDetails;
+import com.htc.billing.service.app.entities.Employee;
+import com.htc.billing.service.app.entities.Products;
 import com.htc.billing.service.app.exceptions.ServiceFaultException;
 import com.htc.billing.service.app.repository.BillingDetailsRepository;
+import com.htc.billing.service.app.repository.BillingEmployeeRepository;
+import com.htc.billing.service.app.repository.BillingProductsRepository;
 import com.htc.billing.service.app.repository.BillingRepository;
 import com.htc.billing.service.generated.BillingResult;
 import com.htc.billing.service.generated.ServiceStatus;
@@ -33,6 +36,12 @@ public class FindByBillingCodeService {
 	private ServiceStatus serviceStatus = new ServiceStatus();
 
 	@Autowired
+	private BillingEmployeeRepository employeeRepo;
+	
+	@Autowired
+	private BillingProductsRepository productRepo;
+	
+	@Autowired
 	public FindByBillingCodeService(BillingDetailsRepository detailsRepo, BillingRepository billingRepo) {
 		this.detailsRepo = detailsRepo;
 		this.billingRepo = billingRepo;
@@ -47,12 +56,15 @@ public class FindByBillingCodeService {
 			serviceStatus.getServiceResult().add("Billing with code:" + billCode + " not found in DB");
 			throw new ServiceFaultException("DATA ERROR", serviceStatus);
 		}
-
+		long employeeCode = aBilling.get().getCodeEmployee();
+		Optional<Employee> anEmp = employeeRepo.findByCodeEmployee(employeeCode);
+		String fullnameEmployee = anEmp.get().getNameEmployee() + " " + anEmp.get().getLastnameEmployee();
+		
 		BillingResult results = new BillingResult();
 
 		results.setBillingCode(billCode);
 		results.setCodeEmployee(aBilling.get().getCodeEmployee());
-		results.setNameEmployee(aBilling.get().getNameEmployee());
+		results.setNameEmployee(fullnameEmployee);
 		results.setNameClient(aBilling.get().getNameClient());
 		results.setPaymentType(aBilling.get().getPaymentType());
 
@@ -64,6 +76,8 @@ public class FindByBillingCodeService {
 			serviceStatus.getServiceResult().add(e.toString());
 			throw new ServiceFaultException(EXCEPTION, serviceStatus);
 		}
+		results.setIva(aBilling.get().getTotalIva());
+		results.setSubtotal(aBilling.get().getSubtotal());
 		results.setDateOfSell(sellDate);
 		results.setTotalSell(aBilling.get().getTotalSell());
 
@@ -72,7 +86,14 @@ public class FindByBillingCodeService {
 
 		for (BillingDetails billDetailElement : allBillingDetails) {
 			BillingResult.ProductsDetails pdetails = new BillingResult.ProductsDetails();
-			BeanUtils.copyProperties(billDetailElement, pdetails);
+			long codProduct = billDetailElement.getCodProduct();
+			Optional<Products> aProduct = productRepo.findByCodeProduct(codProduct);
+			
+			pdetails.setCodProduct(codProduct);
+			pdetails.setQuantity(billDetailElement.getQuantity());
+			pdetails.setPresentationProduct(aProduct.get().getPresentation());
+			pdetails.setNameProduct(aProduct.get().getNameProduct());
+			pdetails.setUnitPriceProduct(billDetailElement.getUnitPriceProduct());
 			results.getProductsDetails().add(pdetails);
 		}
 		return results;

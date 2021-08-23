@@ -23,11 +23,11 @@ import com.htc.billing.service.generated.UpdateBillingRequest;
 @Transactional
 public class UpdateBillingService {
 	private static final String EXCEPTION = "Data Validation Failed. See Reasons";
-
+	private static final String NOT_FOUND = "404: NOT FOUND";
 	private BillingDetailsRepository detailsRepo;
 	private BillingRepository billingRepo;
 	private ServiceStatus serviceStatus =  new ServiceStatus();
-	private Optional<Billing> aBill;
+	
 	@Autowired
 	private BillingEmployeeRepository billingEmployeeRepo;
 	@Autowired
@@ -41,41 +41,41 @@ public class UpdateBillingService {
 
 	@Transactional
 	public ServiceStatus updateBilling(UpdateBillingRequest request) {
-		String nameEmp = null;
 		long codEmployee = request.getCodEmployee();
 		String nameClient = request.getNameClient();
 		String paymentType = request.getPaymentType();
-		LocalDate dateOfSell = LocalDate.now();
-		Optional<Products> aProduct;
+		LocalDate dateOfSell;
+		double totalIva=0;
 		double totalSell = 0;
-
 		double subtotal = 0;
+		Optional<Products> aProduct;
+		
 		long codProduct;
-		String presentationProduct;
-
+		double ivaPerProduct;
+		double amount;
+		
 		long billingCode = request.getBillingCode();
-		aBill = billingRepo.findById(billingCode);
+		long billingDetailCode = billingCode + 1;
+	    Optional<Billing> aBill = billingRepo.findById(billingCode);
 		if (!aBill.isPresent()) {
-			serviceStatus.setServiceCode("404: NOT FOUND");
+			serviceStatus.setServiceCode(NOT_FOUND);
 			serviceStatus.getServiceResult().add("billing with code " + billingCode + " was not found");
 			throw new ServiceFaultException("DATA ERROR", serviceStatus);
+		}else {
+			dateOfSell = aBill.get().getDateOfSell();
 		}
 
-		Optional<Employee> anEmployee = billingEmployeeRepo.findByCodEmployee(codEmployee);
+		Optional<Employee> anEmployee = billingEmployeeRepo.findByCodeEmployee(codEmployee);
 		if (anEmployee.isEmpty()) {
-			serviceStatus.setServiceCode("404: NOT FOUND");
+			serviceStatus.setServiceCode(NOT_FOUND);
 			serviceStatus.getServiceResult().add("The employee " + codEmployee + " was not found");
 			throw new ServiceFaultException(EXCEPTION, serviceStatus);
-		} else {
-			nameEmp = anEmployee.get().getNameEmployee() + " " + anEmployee.get().getLastnameEmployee();
 		}
 
 		for (int i = 0; i < request.getProductDetails().size(); i++) {
 			long codProdu = request.getProductDetails().get(i).getCodProduct();
 			int quatity = request.getProductDetails().get(i).getQuantity();
-			String prodName = request.getProductDetails().get(i).getProductName();
-			double prodPrice = request.getProductDetails().get(i).getProductUnitPrice();
-			if (codProdu == 0 || quatity == 0 || prodName == null || prodPrice == 0) {
+			if (codProdu == 0 || quatity == 0 ) {
 				serviceStatus.setServiceCode("500: BAD REQUEST");
 				serviceStatus.getServiceResult().add("No empty fields allowed in products details section");
 				throw new ServiceFaultException(EXCEPTION, serviceStatus);
@@ -84,28 +84,30 @@ public class UpdateBillingService {
 
 		for (int i = 0; i < request.getProductDetails().size(); i++) {
 			codProduct = request.getProductDetails().get(i).getCodProduct();
-			aProduct = billingProductsRepo.findByCodProduct(codProduct);
+			aProduct = billingProductsRepo.findByCodeProduct(codProduct);
 			if (aProduct.isEmpty()) {
-				serviceStatus.setServiceCode("404: NOT FOUND");
+				serviceStatus.setServiceCode(NOT_FOUND);
 				serviceStatus.getServiceResult()
 						.add("product code " + codProduct + " was not found in DB." + "Cannot Proceed");
 				throw new ServiceFaultException("DATA ERROR", serviceStatus);
 			}
 		}
 
-
 		detailsRepo.deleteAllByBillingCode(billingCode);
 		for (int i = 0; i < request.getProductDetails().size(); i++) {
 			codProduct = request.getProductDetails().get(i).getCodProduct();
+			Optional<BillingDetails> aBillingDetail = detailsRepo.findOneBD(
+					billingDetailCode, billingCode, codProduct);
+			
 			int quantity = request.getProductDetails().get(i).getQuantity();
-			presentationProduct = billingProductsRepo.findByCodProduct(codProduct).get().getPresentationProduct();
-			String productName = request.getProductDetails().get(i).getProductName();
-			double productUnitPrice = request.getProductDetails().get(i).getProductUnitPrice();
-			subtotal = quantity * productUnitPrice;
-			totalSell += subtotal;
+			double productUnitPrice = aBillingDetail.get().getUnitPriceProduct();
+			amount = quantity * productUnitPrice;
+			ivaPerProduct = productUnitPrice * 0.13;
+			totalIva += ivaPerProduct;
+			subtotal += amount;
 			try {
-				BillingDetails details = new BillingDetails(billingCode, codProduct, quantity, presentationProduct,
-						productName, productUnitPrice, subtotal);
+				BillingDetails details = new BillingDetails(billingDetailCode,billingCode, codProduct, 
+						quantity,productUnitPrice, ivaPerProduct, amount);
 				detailsRepo.save(details);
 				serviceStatus.getServiceResult().clear();
 			} catch (Exception e) {
@@ -115,9 +117,11 @@ public class UpdateBillingService {
 			}
 		}
 
+
+		totalSell = subtotal + totalIva;
 		try {
-			Billing bill = new Billing(billingCode, codEmployee, nameEmp, nameClient, paymentType, dateOfSell,
-					totalSell);
+			Billing bill = new Billing(billingCode,codEmployee, nameClient, 
+					paymentType, dateOfSell,totalIva,subtotal,totalSell);
 			billingRepo.save(bill);
 			serviceStatus.setServiceCode("200: UPDATED");
 			serviceStatus.getServiceResult().add("billing with code " + billingCode + " updated successfully");

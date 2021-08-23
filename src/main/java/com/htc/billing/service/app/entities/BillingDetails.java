@@ -1,63 +1,37 @@
 package com.htc.billing.service.app.entities;
 
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-@Entity
-@Table
 public class BillingDetails {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-
-	@Column(nullable = false)
+	private long billingDetailCode;
 	private long billingCode;
-	
-	@Column(nullable = false)
 	private long codProduct;
-	
-	@Column(nullable = false)
 	private int quantity;
-	
-	@Column(nullable = true)
-	String presentationProduct;
-	private String nameProduct;
-	
-	@Column(nullable = false)
 	private double unitPriceProduct;
-	
-	@Column(nullable = false, precision = 2)
-	private double subtotal;
+	private double ivaPerProduct;
+	private double amount;
 
 	public BillingDetails() {
 		super();
 	}
 
-	
-	public BillingDetails(long billingCode, long codProduct, int quantity, 
-			String presentationProduct, String nameProduct, double unitPriceProduct, double subtotal) {
+	public BillingDetails(long billingDetailCode, long billingCode, long codProduct, int quantity,
+			double unitPriceProduct, double ivaPerProduct, double amount) {
 		super();
+		this.billingDetailCode = billingDetailCode;
 		this.billingCode = billingCode;
 		this.codProduct = codProduct;
 		this.quantity = quantity;
-		this.presentationProduct = presentationProduct;
-		this.nameProduct = nameProduct;
 		this.unitPriceProduct = unitPriceProduct;
-		this.subtotal = subtotal;
+		this.ivaPerProduct = ivaPerProduct;
+		this.amount = amount;
 	}
 
-	public int getId() {
-		return id;
+	public long getBillingDetailCode() {
+		return billingDetailCode;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public void setBillingDetailCode(long billingDetailCode) {
+		this.billingDetailCode = billingDetailCode;
 	}
 
 	public long getBillingCode() {
@@ -84,22 +58,6 @@ public class BillingDetails {
 		this.quantity = quantity;
 	}
 
-	public String getPresentationProduct() {
-		return presentationProduct;
-	}
-
-	public void setPresentationProduct(String presentationProduct) {
-		this.presentationProduct = presentationProduct;
-	}
-
-	public String getNameProduct() {
-		return nameProduct;
-	}
-
-	public void setNameProduct(String nameProduct) {
-		this.nameProduct = nameProduct;
-	}
-
 	public double getUnitPriceProduct() {
 		return unitPriceProduct;
 	}
@@ -108,12 +66,20 @@ public class BillingDetails {
 		this.unitPriceProduct = unitPriceProduct;
 	}
 
-	public double getSubtotal() {
-		return subtotal;
+	public double getIvaPerProduct() {
+		return ivaPerProduct;
 	}
 
-	public void setSubtotal(double subtotal) {
-		this.subtotal = subtotal;
+	public void setIvaPerProduct(double ivaPerProduct) {
+		this.ivaPerProduct = ivaPerProduct;
+	}
+
+	public double getAmount() {
+		return amount;
+	}
+
+	public void setAmount(double amount) {
+		this.amount = amount;
 	}
 
 }

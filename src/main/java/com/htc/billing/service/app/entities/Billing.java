@@ -2,46 +2,37 @@ package com.htc.billing.service.app.entities;
 
 import java.time.LocalDate;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-@Entity
-@Table
 public class Billing {
 
-	@Id
+
 	private long billingCode;
-	@Column(nullable = false)
 	private long codeEmployee;
-	
-	@Column(nullable = true)
-	private String nameEmployee;
 	private String nameClient;
-	
-	@Column(nullable = false)
 	private String paymentType;
-	@Column(nullable = false)
 	private LocalDate dateOfSell;
-	@Column(nullable = false, precision = 2)
+	private double totalIva;
+	private double subtotal;
 	private double totalSell;
 
 	public Billing() {
 		super();
 	}
-
-	public Billing(long billingCode, long codeEmployee,String nameEmployee,
-			String nameClient, String paymentType, LocalDate dateOfSell, double totalSell) {
+	
+	public Billing(long billingCode, long codeEmployee, String nameClient, String paymentType, LocalDate dateOfSell,
+			double totalIva, double subtotal, double totalSell) {
 		super();
 		this.billingCode = billingCode;
-		this.nameEmployee = nameEmployee;
 		this.codeEmployee = codeEmployee;
 		this.nameClient = nameClient;
 		this.paymentType = paymentType;
 		this.dateOfSell = dateOfSell;
+		this.totalIva = totalIva;
+		this.subtotal = subtotal;
 		this.totalSell = totalSell;
 	}
+
+
+
 
 	public long getBillingCode() {
 		return billingCode;
@@ -83,6 +74,26 @@ public class Billing {
 		this.dateOfSell = dateOfSell;
 	}
 
+	
+	public double getTotalIva() {
+		return totalIva;
+	}
+
+	public void setTotal_iva(double totalIva) {
+		this.totalIva = totalIva;
+	}
+
+
+	public double getSubtotal() {
+		return subtotal;
+	}
+
+
+	public void setSubtotal(double subtotal) {
+		this.subtotal = subtotal;
+	}
+
+
 	public double getTotalSell() {
 		return totalSell;
 	}
@@ -91,12 +102,6 @@ public class Billing {
 		this.totalSell = totalSell;
 	}
 
-	public String getNameEmployee() {
-		return nameEmployee;
-	}
 
-	public void setNameEmployee(String nameEmployee) {
-		this.nameEmployee = nameEmployee;
-	}
 
 }

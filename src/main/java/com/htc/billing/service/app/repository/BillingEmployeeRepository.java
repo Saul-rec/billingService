@@ -13,6 +13,6 @@ import com.htc.billing.service.app.entities.Employee;
 public interface BillingEmployeeRepository extends JpaRepository<Employee, Integer>{
 
 	//@Query(value = "select e.cod_employee from com.htc.billing.service.app.entities.Employee e where e.cod_employee = ?1")
-	public Optional<Employee> findByCodEmployee(long codEmployee);
+	public Optional<Employee> findByCodeEmployee(long codeEmployee);
 	
 }
