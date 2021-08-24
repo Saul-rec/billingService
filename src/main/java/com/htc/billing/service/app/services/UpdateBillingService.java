@@ -1,10 +1,12 @@
 package com.htc.billing.service.app.services;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,14 +19,16 @@ import com.htc.billing.service.generated.ServiceStatus;
 import com.htc.billing.service.generated.UpdateBillingRequest;
 
 @Service
-@Transactional
 public class UpdateBillingService {
 	private static final String EXCEPTION = "Data Validation Failed. See Reasons";
 	private BillingDetailsRepository detailsRepo;
 	private BillingRepository billingRepo;
 	private ServiceStatus serviceStatus = new ServiceStatus();
-	ValidationService validation = new ValidationService();
 	
+	@Autowired
+	private ValidationService validation;
+	
+	@Autowired
 	public UpdateBillingService(BillingDetailsRepository detailsRepo, BillingRepository billingRepo) {
 		super();
 		this.detailsRepo = detailsRepo;
@@ -44,31 +48,27 @@ public class UpdateBillingService {
 		long codProduct;
 		double ivaPerProduct;
 		double amount;
-		long billingDetailCode=1L;
 		long billingCode = request.getBillingCode();
-		List<BillingDetails> allBillingDetails = new ArrayList<>();
 		
 
 		validation.checkBillingExistence(billingCode);
 		validation.checkEmployeeExistence(codEmployee);
-		validation.noEmptyFieldsForUpdate(request);
-		validation.allProductsInUpdateRequestExist(request);
+		validation.updateFieldsValidation(request);
 
 		Optional<Billing> aBill = billingRepo.findById(billingCode);
 		dateOfSell = aBill.get().getDateOfSell();
-
-		Billing bill1 = new Billing(billingCode, codEmployee, nameClient, paymentType, dateOfSell, totalIva,
-				subtotal, totalSell);
-		billingRepo.save(bill1);
+		List<BillingDetails> allDetails=detailsRepo.findByBillingCode(billingCode);
+		
 		for (int i = 0; i < request.getProductDetails().size(); i++) {
-			//obtener el id de cada bill detail
+			//Obtener el id de cada bill detail
+			long billingDetailCode = allDetails.get(i).getBillingDetailCode();
+			
 			codProduct = request.getProductDetails().get(i).getCodProduct();
-			Optional<BillingDetails> aBillingDetail = detailsRepo.findOneBD(billingDetailCode, billingCode, codProduct);
-
 			int quantity = request.getProductDetails().get(i).getQuantity();
-			double productUnitPrice = aBillingDetail.get().getUnitPriceProduct();
-			amount = quantity * productUnitPrice;
-			ivaPerProduct = productUnitPrice * 0.13;
+			double productUnitPrice = allDetails.get(i).getUnitPriceProduct();
+
+			amount = formatTo2Decimals(quantity,productUnitPrice);
+			ivaPerProduct = formatTo2Decimals(amount,0.13);
 			totalIva += ivaPerProduct;
 			subtotal += amount;
 			try {
@@ -76,7 +76,7 @@ public class UpdateBillingService {
 						productUnitPrice, ivaPerProduct, amount);
 				detailsRepo.save(details);
 				serviceStatus.getServiceResult().clear();
-			} catch (Exception e) {
+			}catch (Exception e) {
 				serviceStatus.setServiceCode("500: SERVER ERROR");
 				serviceStatus.getServiceResult().add(e.toString());
 				throw new ServiceFaultException(EXCEPTION, serviceStatus);
@@ -89,13 +89,17 @@ public class UpdateBillingService {
 			billingRepo.save(bill2);
 			serviceStatus.setServiceCode("200: UPDATED");
 			serviceStatus.getServiceResult().add("billing with code " + billingCode + " updated successfully");
-		} catch (Exception e) {
+		}catch (Exception e) {
 			serviceStatus.setServiceCode("500: SERVER ERROR");
 			serviceStatus.getServiceResult().add(e.toString());
 			throw new ServiceFaultException(EXCEPTION, serviceStatus);
 		}
-
 		return serviceStatus;
 	}
-
+	
+	public double formatTo2Decimals(double n1, double n2) {
+		BigDecimal bigdec = new BigDecimal(n1 * n2).setScale(2, RoundingMode.HALF_DOWN);
+		double result = bigdec.doubleValue();
+		return result;
+	}
 }

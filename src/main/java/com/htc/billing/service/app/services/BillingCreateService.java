@@ -1,5 +1,8 @@
 package com.htc.billing.service.app.services;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Random;
@@ -24,12 +27,13 @@ public class BillingCreateService {
 
 	private BillingDetailsRepository billingDetailsRepo;
 	private BillingRepository billingRepo;
-	ValidationService validation = new ValidationService();
-
+	
 	@Autowired
 	private BillingProductsRepository billingProductsRepo;
 	private ServiceStatus serviceStatus = new ServiceStatus();
-
+	@Autowired
+	private ValidationService validation;
+	
 	@Autowired
 	public BillingCreateService(BillingDetailsRepository repository, BillingRepository billingRepository) {
 		super();
@@ -40,9 +44,9 @@ public class BillingCreateService {
 	public ServiceStatus createNewBilling(NewBillingRequest request) {
 
 		serviceStatus.getServiceResult().clear();
-		
+
 		long billingCode = generateRandom();
-		
+
 		long codEmployee = request.getCodEmployee();
 		String nameClient = request.getNameClient();
 		String paymentType = request.getPaymentType();
@@ -51,31 +55,27 @@ public class BillingCreateService {
 		double totalSell = 0;
 		double subtotal = 0;
 		Optional<Products> aProduct;
-
 		double ivaPerProduct = 0;
 		double amount = 0;
 		long codProduct;
 		validation.checkEmployeeExistence(codEmployee);
-		validation.allProductsInCreateRequestExist(request);
-		validation.noEmptyFieldInListValidation(request);
+		validation.createFieldsValidation(request);
 
-		Billing bill1 = new Billing(billingCode, codEmployee, nameClient, paymentType, dateOfSell, totalIva,
-				subtotal, totalSell);
+		Billing bill1 = new Billing(billingCode, codEmployee, nameClient, paymentType, dateOfSell, totalIva, subtotal,
+				totalSell);
 		billingRepo.save(bill1);
 		for (int i = 0; i < request.getProductDetails().size(); i++) {
 			long billingDetailCode = generateRandom();
-			
+
 			codProduct = request.getProductDetails().get(i).getCodProduct();
 			int quantity = request.getProductDetails().get(i).getQuantity();
 			aProduct = billingProductsRepo.findByCodeProduct(codProduct);
 			double productUnitPrice = aProduct.get().getUnitPriceProduct();
-			amount = quantity * productUnitPrice;
-			ivaPerProduct = amount * 0.13;
+			
+			amount = formatTo2Decimals(quantity,productUnitPrice);
+			ivaPerProduct = formatTo2Decimals(amount,0.13);
 			subtotal += amount;
 			totalIva += ivaPerProduct;
-			if (i == 0) {
-				
-			}
 			try {
 				BillingDetails details = new BillingDetails(billingDetailCode, billingCode, codProduct, quantity,
 						productUnitPrice, ivaPerProduct, amount);
@@ -93,8 +93,7 @@ public class BillingCreateService {
 					subtotal, totalSell);
 			billingRepo.save(bill2);
 			serviceStatus.setServiceCode("201: CREATED");
-			serviceStatus.getServiceResult()
-					.add("billing with code " + billingCode + " created in DB successfully");
+			serviceStatus.getServiceResult().add("billing with code " + billingCode + " created in DB successfully");
 		} catch (Exception e) {
 			serviceStatus.setServiceCode("500: SERVER ERROR");
 			serviceStatus.getServiceResult().add(e.toString());
@@ -102,9 +101,15 @@ public class BillingCreateService {
 		}
 		return serviceStatus;
 	}
-	
+
 	public long generateRandom() {
 		Random rnd = new Random();
-		return (rnd.nextInt(89999998) + 10000000);
+		return (rnd.nextInt(89999999) + 10000000);
+	}
+	
+	public double formatTo2Decimals(double n1, double n2) {
+		BigDecimal bigdec = new BigDecimal(n1 * n2).setScale(2, RoundingMode.HALF_DOWN);
+		double result = bigdec.doubleValue();
+		return result;
 	}
 }

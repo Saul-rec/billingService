@@ -55,6 +55,12 @@ public class FindAllService {
 		billingObjectList.clear();
 		allBillings = new ArrayList<>();
 		billingRepo.findAll().forEach(e -> allBillings.add(e));
+		if (allBillings.isEmpty()) {
+			serviceStatus.setServiceCode("204:No Content");
+			serviceStatus.getServiceResult().add("Nothing to show");
+			throw new ServiceFaultException("VOID", serviceStatus);
+		}
+		
 		for (Billing billElement : allBillings) {
 		    BillingResult results = new BillingResult();
 		   
