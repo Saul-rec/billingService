@@ -1,8 +1,5 @@
 package com.htc.billing.service.app.services;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Random;
@@ -72,8 +69,8 @@ public class BillingCreateService {
 			aProduct = billingProductsRepo.findByCodeProduct(codProduct);
 			double productUnitPrice = aProduct.get().getUnitPriceProduct();
 			
-			amount = formatTo2Decimals(quantity,productUnitPrice);
-			ivaPerProduct = formatTo2Decimals(amount,0.13);
+			amount = quantity * productUnitPrice;
+			ivaPerProduct = (amount * 13)/100;
 			subtotal += amount;
 			totalIva += ivaPerProduct;
 			try {
@@ -106,10 +103,5 @@ public class BillingCreateService {
 		Random rnd = new Random();
 		return (rnd.nextInt(89999999) + 10000000);
 	}
-	
-	public double formatTo2Decimals(double n1, double n2) {
-		BigDecimal bigdec = new BigDecimal(n1 * n2).setScale(2, RoundingMode.HALF_DOWN);
-		double result = bigdec.doubleValue();
-		return result;
-	}
+
 }

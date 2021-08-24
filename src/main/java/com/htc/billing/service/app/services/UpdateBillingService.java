@@ -1,7 +1,5 @@
 package com.htc.billing.service.app.services;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -67,8 +65,8 @@ public class UpdateBillingService {
 			int quantity = request.getProductDetails().get(i).getQuantity();
 			double productUnitPrice = allDetails.get(i).getUnitPriceProduct();
 
-			amount = formatTo2Decimals(quantity,productUnitPrice);
-			ivaPerProduct = formatTo2Decimals(amount,0.13);
+			amount = quantity * productUnitPrice;
+			ivaPerProduct = (amount * 0.13)/100;
 			totalIva += ivaPerProduct;
 			subtotal += amount;
 			try {
@@ -97,9 +95,4 @@ public class UpdateBillingService {
 		return serviceStatus;
 	}
 	
-	public double formatTo2Decimals(double n1, double n2) {
-		BigDecimal bigdec = new BigDecimal(n1 * n2).setScale(2, RoundingMode.HALF_DOWN);
-		double result = bigdec.doubleValue();
-		return result;
-	}
 }
