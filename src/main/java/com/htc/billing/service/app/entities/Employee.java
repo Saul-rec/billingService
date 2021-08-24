@@ -1,11 +1,14 @@
 package com.htc.billing.service.app.entities;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
-
+@Entity
 public class Employee {
 
-	
+	@Id
 	private long codeEmployee;
+	
 	private String nameEmployee;
 	private String lastnameEmployee;
 

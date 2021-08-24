@@ -1,8 +1,15 @@
 package com.htc.billing.service.app.entities;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
 public class BillingDetails {
 
+	@Id
 	private long billingDetailCode;
+	
+	
 	private long billingCode;
 	private long codProduct;
 	private int quantity;

@@ -2,10 +2,15 @@ package com.htc.billing.service.app.entities;
 
 import java.time.LocalDate;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
 public class Billing {
 
-
+	@Id
 	private long billingCode;
+	
 	private long codeEmployee;
 	private String nameClient;
 	private String paymentType;
